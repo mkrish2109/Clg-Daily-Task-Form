@@ -1,5 +1,7 @@
 import React, { useState } from "react"; 
+
 import { jsPDF } from "jspdf"; 
+
 import autoTable from "jspdf-autotable"; // ✅ Correct import 
 
  
@@ -8,9 +10,9 @@ const DailyForm = () => {
 
   const [formData, setFormData] = useState({ 
 
-    Day: "", 
+    day: "", 
 
-    Date: "", 
+    date: "", 
 
     arrivalTime: "", 
 
@@ -202,7 +204,7 @@ const DailyForm = () => {
 
           {  
 
-            Content: formData.mainPoints || " ",  
+            content: formData.mainPoints || " ",  
 
             colSpan: 5,  
 
