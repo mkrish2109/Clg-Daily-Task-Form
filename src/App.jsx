@@ -60,167 +60,107 @@ const DailyForm = () => {
 
     logo.onload = function () { 
 
-      doc.addImage(logo, "PNG", 15, 10, 28, 28); // X, Y, Width, Height 
+      doc.addImage(logo, "PNG", 22.098, 14.272, 22.86, 27.94); // X, Y, Width, Height 
 
     // Header 
 
-    doc.setFont("times", "bold"); 
+    doc.setFont("times", 700); 
 
-    doc.setFontSize(18); 
+    doc.setFontSize(23); 
 
-    doc.text("BHAGWAN MAHAVIR UNIVERSITY", 50, 20); 
+    doc.text("BHAGWAN MAHAVIR UNIVERSITY", 48.26, 23.05); 
 
-    doc.setFont("times", "italic"); 
-
-    doc.setFontSize(10); 
-
-    doc.text("(Established under Gujarat Act No. 20 of 2019)", 80, 26); 
-
-    doc.setFont("times", "bold"); 
+    doc.setFont("times", 500); 
 
     doc.setFontSize(14); 
 
-    doc.text("FACULTY OF ENGINEERING", 78, 32); 
+    doc.text("(Established under Gujarat Act No. 20 of 2019)", 65.786, 28.702); 
+
+    doc.setFont("times",600); 
+
+    doc.setFontSize(18); 
+
+    doc.text("FACULTY OF ENGINEERING", 75.024, 35.766); 
 
    
 
     // Program & Semester 
 
-    doc.setFontSize(12); 
+    doc.setFontSize(15.5); 
 
-    doc.text("PROGRAM:", 15, 45); 
-
-    doc.setFont("times", "bold"); 
-
-    doc.text("B. TECH", 40, 45); 
-
-    doc.setFont("times", "normal"); 
-
-    doc.text("SEMESTER:", 150, 45); 
-
-    doc.setFont("times", "bold"); 
-
-    doc.text("8", 180, 45); 
-
+    doc.text("PROGRAM: B. TECH", 20.57, 57.15); 
+    doc.setFont("times", 500);
+    
+    doc.text("SEMESTER: 8",151.638,  57.15 ); 
+    doc.setFont("times", 500); 
    
 
     // Table with Correct Layout 
-
     autoTable(doc, { 
-
-      startY: 50, 
-
-      theme: "plain", 
-
-      styles: { fontSize: 10, cellPadding: 4, valign: "middle", lineColor: [0, 0, 0], lineWidth: 0.3 }, 
-
-      columnStyles: { 
-
-        0: { fontStyle: "bold", cellWidth: 36 },  
-
-        1: { cellWidth: 36 }, 
-
-        2: { fontStyle: "bold", cellWidth: 36 }, 
-
-        3: { cellWidth: 36 }, 
-
-        4: { cellWidth: 36 }, 
-
+      startY: 65, 
+      theme: "grid", // Changed theme to "grid"
+      tableWidth: 165.1, // Set max table width to 6.49 inches
+      styles: { 
+          fontSize: 10, 
+          cellPadding: 3.5, 
+          valign: "middle", 
+          halign: "center", // Center horizontally
+          lineColor: [0, 0, 0], 
+          lineWidth: 0.27 
       }, 
-
+      columnStyles: { 
+          0: { fontStyle: "semibold", cellWidth: 33.02 },  
+          1: { cellWidth:  33.02 }, 
+          2: { fontStyle: "semibold", cellWidth: 33.02  }, 
+          3: { cellWidth:  33.02 }, 
+          4: { cellWidth:  33.02 }, 
+      }, 
       body: [ 
-
-        [ 
-
-          { content: "DAY-", styles: { fontStyle: "bold" } }, 
-
-          formData.day || "N/A", 
-
-          { content: "DATE", styles: { fontStyle: "bold" } }, 
-
-          formData.date || "N/A", 
-
-          "" 
-
-        ], 
-
-        [ 
-
-          { content: "Time of Arrival", styles: { fontStyle: "bold" } }, 
-
-          formData.arrivalTime || "N/A", 
-
-          { content: "Time of Departure", styles: { fontStyle: "bold" } }, 
-
-          formData.departureTime || "N/A", 
-
-          { content: "Remarks", styles: { fontStyle: "bold" } } 
-
-        ], 
-
-        [ 
-
-          { content: "Dept./Division", styles: { fontStyle: "bold" } }, 
-
-          formData.department || " ", 
-
-          { content: "Name of Finished Product", styles: { fontStyle: "bold" } }, 
-
-          formData.productName || " ", 
-
-          formData.remarks || " " 
-
-        ], 
-
-        [ 
-
-           
-
-          { content: "Supervisor Details", styles: { fontStyle: "bold" }, rowSpan: 3 },  
-
-          { content: `Name: Savan Dhameliya`, colSpan: 4 } 
-
-        ], 
-
-        [ 
-
-          { content: `Email Address: savand@digitsoftsol.com`, colSpan: 4 } 
-
-        ], 
-
-        [ 
-
-          { content: `Contact Number: 93772 71234`, colSpan: 4 } 
-
-        ], 
-
-        [ 
-
-          { content: "Main Points of the Day", styles: { fontStyle: "bold" }, colSpan: 5 } 
-
-        ], 
-
-        [ 
-
-          {  
-
-            content: formData.mainPoints || " ",  
-
-            colSpan: 5,  
-
-            styles: { minCellHeight: 80, valign: "top", halign: "left", fontStyle: "normal" }  
-
-          } 
-
-        ] 
-
-         
-
-         
-
+          [ 
+              { content: "DAY-", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.day || "N/A", styles: { halign: "center", valign: "middle" } }, 
+              { content: "DATE", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.date || "N/A", styles: { halign: "center", valign: "middle" } }, 
+              { content: "", styles: { halign: "center", valign: "middle" } } 
+          ], 
+          [ 
+              { content: "Time of Arrival", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.arrivalTime || "N/A", styles: { halign: "center", valign: "middle" } }, 
+              { content: "Time of Departure", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.departureTime || "N/A", styles: { halign: "center", valign: "middle" } }, 
+              { content: "Remarks", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } } 
+          ], 
+          [ 
+              { content: "Dept./Division", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.department || " ", styles: { halign: "center", valign: "middle" } }, 
+              { content: "Name of Finished Product", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: formData.productName || " ", styles: { halign: "center", valign: "middle" } }, 
+              { content: formData.remarks || " ", styles: { halign: "center", valign: "middle" } } 
+          ], 
+          [ 
+              { content: "Supervisor Details", styles: { fontStyle: "semibold", halign: "left", valign: "middle" }, rowSpan: 3 },  
+              { content: `Name: Savan Dhameliya`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+          ], 
+          [ 
+              { content: `Email Address: savand@digitsoftsol.com`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+          ], 
+          [ 
+              { content: `Contact Number: 93772 71234`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+          ], 
+          [ 
+              { content: "Main points of the day", colSpan: 5, styles: { halign: "left", valign: "middle" } } 
+          ], 
+          [ 
+              {  
+                  content: formData.mainPoints || " ",  
+                  colSpan: 5,  
+                  styles: { minCellHeight: 110.792, valign: "top", halign: "left", fontStyle: "normal" }  
+              } 
+          ] 
       ] 
+  });
+  
 
-    }); 
 
      
 
@@ -236,7 +176,7 @@ const DailyForm = () => {
 
     // Signature Section 
 
-    doc.setFont("times", "bold"); 
+    doc.setFont("times", "semibold"); 
 
     doc.text("Signature of Industry Supervisor", 15, yPos + 30); 
 
