@@ -39,32 +39,56 @@ const DailyForm = () => {
         alert("CSV file is empty or has no data rows");
         return;
       }
-
+    
       const headers = lines[0].split(',').map(header => header.trim());
       const results = [];
-
+    
       for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(/(?<!\\),/); // Split on commas not preceded by backslash
+        let currentline = lines[i];
         const obj = {};
-
-        for (let j = 0; j < headers.length; j++) {
-          const header = headers[j];
-          let value = currentline[j] ? currentline[j].trim() : '';
+        let columnIndex = 0;
+        let currentPos = 0;
+        let insideQuotes = false;
+        let currentValue = '';
+    
+        while (currentPos < currentline.length) {
+          const char = currentline[currentPos];
           
-          // Remove surrounding quotes if present
-          if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.substring(1, value.length - 1);
+          if (char === '"') {
+            insideQuotes = !insideQuotes;
+            currentPos++;
+            continue;
           }
-          
-          // Replace escaped commas
-          value = value.replace(/\\,/g, ',');
-          
-          obj[header] = value;
+    
+          if (char === ',' && !insideQuotes) {
+            // Remove surrounding quotes if present
+            let value = currentValue.trim();
+            if (value.startsWith('"') && value.endsWith('"')) {
+              value = value.slice(1, -1);
+            }
+            value = value.replace(/""/g, '"'); // Handle escaped quotes
+            
+            obj[headers[columnIndex]] = value;
+            columnIndex++;
+            currentValue = '';
+            currentPos++;
+            continue;
+          }
+    
+          currentValue += char;
+          currentPos++;
         }
-
+    
+        // Add the last column
+        let value = currentValue.trim();
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1);
+        }
+        obj[headers[columnIndex]] = value.replace(/""/g, '"');
+    
         results.push(obj);
       }
-
+    
       setCsvData(results);
     };
 
@@ -94,81 +118,84 @@ const DailyForm = () => {
         doc.addImage(logo, "PNG", 22.098, 14.272, 22.86, 27.94);
         
         // Header content
-        doc.setFont("times", "bold");
+        doc.setFont("times", 700);
         doc.setFontSize(23);
         doc.text("BHAGWAN MAHAVIR UNIVERSITY", 48.26, 23.05);
-        doc.setFont("times", "normal");
+        doc.setFont("times", 500);
         doc.setFontSize(14);
         doc.text("(Established under Gujarat Act No. 20 of 2019)", 65.786, 28.702);
-        doc.setFont("times", "bold");
+        doc.setFont("times", 600);
         doc.setFontSize(18);
         doc.text("FACULTY OF ENGINEERING", 75.024, 35.766);
 
         doc.setFontSize(15.5);
         doc.text("PROGRAM: B. TECH", 20.57, 57.15);
-        doc.setFont("times", "normal");
+        doc.setFont("times", 500);
         doc.text("SEMESTER: 8", 151.638, 57.15);
+        doc.setFont("times", 500); 
         const formattedMainPoints = formatMainPoints(data.mainPoints);
         
         autoTable(doc, {
           startY: 65,
           theme: "grid",
-          tableWidth: 165.1,
+          tableWidth: 165.0,
           styles: { 
             fontSize: 10, 
-            cellPadding: 3.5, 
+            cellPadding: 3.0, 
             valign: "middle", 
             halign: "center",
             lineColor: [0, 0, 0], 
-            lineWidth: 0.27 
+            lineWidth: 0.25 
           }, 
           columnStyles: { 
-            0: { fontStyle: "bold", cellWidth: 33.02 },  
+            0: { fontStyle: "semibold", cellWidth: 33.02 },  
             1: { cellWidth: 33.02 }, 
-            2: { fontStyle: "bold", cellWidth: 33.02 }, 
+            2: { fontStyle: "semibold", cellWidth: 33.02 }, 
             3: { cellWidth: 33.02 }, 
             4: { cellWidth: 33.02 }, 
           }, 
           body: [ 
             [ 
-              { content: "DAY-", styles: { fontStyle: "bold", halign: "center" } }, 
-              { content: data.day || "N/A" }, 
-              { content: "DATE", styles: { fontStyle: "bold" } }, 
-              { content: data.date || "N/A" }, 
-              { content: "" } 
+              { content: "DAY-", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: data.day || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+              { content: "DATE", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: data.date || "N/A", styles: { halign: "center", valign: "middle" } }, 
+              { content: "", styles: { halign: "center", valign: "middle" } } 
             ], 
             [ 
-              { content: "Time of Arrival", styles: { fontStyle: "bold" } }, 
-              { content: data.arrivalTime || "N/A" }, 
-              { content: "Time of Departure", styles: { fontStyle: "bold" } }, 
-              { content: data.departureTime || "N/A" }, 
-              { content: "Remarks", styles: { fontStyle: "bold" } } 
+              { content: "Time of Arrival", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: data.arrivalTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+              { content: "Time of Departure", styles: { fontStyle: "semibold",halign: "left" } }, 
+              { content: data.departureTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+              { content: "Remarks",styles: { fontStyle: "semibold", halign: "center", valign: "middle" } } 
+            ],
+            [ 
+              { content: "Dept./Division", styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: data.department || " " , styles: { halign: "center", valign: "middle" } }, 
+              { content: "Name of Finished Product", styles: { fontStyle: "semibold", halign: "left" } }, 
+              { content: data.productName || " " , styles: { fontStyle: "semibold", halign: "center", valign: "middle" } }, 
+              { content: data.remarks || " " , styles: { halign: "center", valign: "middle" } }  
             ], 
             [ 
-              { content: "Dept./Division", styles: { fontStyle: "bold" } }, 
-              { content: data.department || " " }, 
-              { content: "Name of Finished Product", styles: { fontStyle: "bold" } }, 
-              { content: data.productName || " " }, 
-              { content: data.remarks || " " } 
+              { content: "Supervisor Details", styles: { fontStyle: "semibold", halign: "left", valign: "middle" }, rowSpan: 3 },  
+              { content: `Name: Savan Dhameliya`,colSpan: 4, styles: { halign: "left", valign: "middle" } } 
             ], 
             [ 
-              { content: "Supervisor Details", styles: { fontStyle: "bold", halign: "left" }, rowSpan: 3 },  
-              { content: `Name: Savan Dhameliya`, colSpan: 4, styles: { halign: "left" } } 
+              { content: `Email Address: savand@digitsoftsol.com`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
             ], 
             [ 
-              { content: `Email Address: savand@digitsoftsol.com`, colSpan: 4, styles: { halign: "left" } } 
+              { content: `Contact Number: 93772 71234`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
             ], 
             [ 
-              { content: `Contact Number: 93772 71234`, colSpan: 4, styles: { halign: "left" } } 
-            ], 
-            [ 
-              { content: "Main points of the day", colSpan: 5, styles: { halign: "left" } } 
+              { content: "Main points of the day", colSpan: 5, styles: { halign: "left", valign: "middle" } }
             ], 
             [ 
               {  
-                content: formattedMainPoints,  
+                content: formattedMainPoints || " ",  
                 colSpan: 5,  
                 styles: { 
+                  fontSize: 14,
+                  fontStyle: "normal",
                   minCellHeight: 110.792, 
                   valign: "top", 
                   halign: "left",
@@ -178,7 +205,14 @@ const DailyForm = () => {
             ]
           ] 
         });
+        let yPos = doc.lastAutoTable.finalY + 5; 
 
+        // Signature Section 
+  
+        doc.setFont("times", "semibold"); 
+  
+        doc.text("Signature of Industry Supervisor", 15, yPos + 30); 
+  
         const pdfBlob = doc.output('blob');
         resolve({ blob: pdfBlob, fileName: `${data.day + " * " + data.date || `report_${currentIndex}`}.pdf` });
       };
@@ -208,7 +242,7 @@ const DailyForm = () => {
         
         // Create data object for this entry
         const currentData = {
-          day: `Day ${i + 1}`,
+          day: `${i + 1}`,
           date: entry.Date || entry.date || "",
           arrivalTime: entry["Time of Arrival"] || "",
           departureTime: entry["Time of Departure"] || "",
