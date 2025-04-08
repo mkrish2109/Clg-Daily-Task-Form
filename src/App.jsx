@@ -1,19 +1,15 @@
 import { BrowserRouter, Route, Routes, NavLink } from "react-router-dom";
 import React from "react";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { saveAs } from "file-saver";
-import JSZip from "jszip";
-import Auto from "./components/Auto";
-import Demo from "./components/Demo";
+import AutoGenerate from "./components/AutoGenerate";
+import ManualEntry from "./components/ManualEntry";
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-100 text-gray-800">
+      <div className="min-h-screen  bg-gray-100 text-gray-800">
         {/* Navigation */}
-        <nav className="bg-gray-800 p-4 shadow-md">
-          <div className="container mx-auto flex justify-between items-center">
+        <nav className="bg-gray-800 p-4 shadow-md ">
+          <div className="w-full flex justify-between items-center px-6">
             <div className="text-white font-bold text-xl">PDF Generator</div>
             <div className="flex gap-6">
               <NavLink
@@ -25,7 +21,7 @@ function App() {
                   }`
                 }
               >
-                Demo
+                ManualEntry
               </NavLink>
               <NavLink
                 to="/auto"
@@ -35,17 +31,18 @@ function App() {
                   }`
                 }
               >
-                Auto
+                AutoGenerate
               </NavLink>
             </div>
           </div>
         </nav>
 
+
         {/* Routed Pages */}
         <main className="container mx-auto py-10 px-4">
           <Routes>
-            <Route path="/" element={<Demo />} />
-            <Route path="/auto" element={<Auto />} />
+            <Route path="/" element={<ManualEntry />} />
+            <Route path="/auto" element={<AutoGenerate />} />
           </Routes>
         </main>
       </div>
