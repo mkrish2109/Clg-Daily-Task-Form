@@ -206,206 +206,204 @@ const AutoGenerate = () => {
       .trim();
   };
 
-  const generatePDF = async (data) => {
+  // Replace the generatePDF and processAllReports functions with these:
+
+  const generatePDF = async (data, doc = null, isLast = false) => {
     return new Promise((resolve) => {
-      try {
-        const doc = new jsPDF("p", "mm", "a4");
-        const logo = new Image();
-        logo.src = "/logo.png";
+      const currentDoc = doc || new jsPDF("p", "mm", "a4");
+  
+      const loadImage = (src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+      };
+  
+      Promise.all([
+        loadImage("/logo.png"),
+        loadImage("/signature.png")
+      ]).then(([logo, signature]) => {
+        try {
+          // Add logo
+          currentDoc.addImage(logo, "PNG", 22.098, 17.272, 22.86, 27.94);
+          
+          // Header content
+          currentDoc.setFont("times", 700);
+          currentDoc.setFontSize(24);
+          currentDoc.text("BHAGWAN MAHAVIR UNIVERSITY", 48.26, 27.05);
+          currentDoc.setFont("times", 500);
+          currentDoc.setFontSize(14);
+          currentDoc.text("(Established under Gujarat Act No. 20 of 2019)", 65.786, 32.0);
+          currentDoc.setFont("times", 700);
+          currentDoc.setFontSize(18);
+          currentDoc.text("FACULTY OF ENGINEERING", 75.024, 38.766);
 
-        logo.onload = function () {
-          try {
-            doc.addImage(logo, "PNG", 22.098, 17.272, 22.86, 27.94);
-            
-            // Header content
-            doc.setFont("times", 700);
-            doc.setFontSize(24);
-            doc.text("BHAGWAN MAHAVIR UNIVERSITY", 48.26, 27.05);
-            doc.setFont("times", 500);
-            doc.setFontSize(14);
-            doc.text("(Established under Gujarat Act No. 20 of 2019)", 65.786, 32.0);
-            doc.setFont("times", 700);
-            doc.setFontSize(18);
-            doc.text("FACULTY OF ENGINEERING", 75.024, 38.766);
+          currentDoc.setFontSize(16);
+          currentDoc.text("PROGRAM: B. TECH", 20.57, 57.15);
+          currentDoc.setFont("times", 600);
+          currentDoc.setFontSize(16);
+          currentDoc.text("SEMESTER: 8", 151.638, 57.15);
+          currentDoc.setFont("times", 600); 
+          const formattedMainPoints = formatMainPoints(data.mainPoints);
+          
+          autoTable(currentDoc, {
+            startY: 67,
+            margin: { left: 22.5 },
+            tableWidth: 165.0,
+            theme: "grid",
+            styles: { 
+              fontSize: 10,
+              fontStyle:"Times New Roman", 
+              cellPadding: 1.7, 
+              valign: "middle", 
+              halign: "center",
+              lineColor: [0, 0, 0], 
+              lineWidth: 0.25 
+            }, 
+            columnStyles: { 
+              0: {  cellWidth: 33.02 },  
+              1: { cellWidth: 33.02 }, 
+              2: {  cellWidth: 33.02 }, 
+              3: { cellWidth: 33.02 }, 
+              4: { cellWidth: 33.02 }, 
+            }, 
+            body: [ 
+              [ 
+                { content: "DAY-", styles: {  halign: "center", valign: "middle" } }, 
+                { content: data.day || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+                { content: "DATE", styles: {  halign: "left", valign: "middle" } }, 
+                { content: data.date || "N/A", styles: { halign: "center", valign: "middle" } }, 
+                { content: "", styles: { halign: "center", valign: "middle" } } 
+              ], 
+              [ 
+                { content: "Time of Arrival", styles: {  halign: "center", valign: "middle" } }, 
+                { content: data.arrivalTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+                { content: "Time of Departure", styles: { halign: "left" } }, 
+                { content: data.departureTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
+                { content: "Remarks",styles: {  halign: "left", valign: "middle" } } 
+              ],
+              [ 
+                { content: "Dept./Division", styles: {  halign: "center", valign: "middle" } }, 
+                { content: data.department || " " , styles: { halign: "center", valign: "middle" } }, 
+                { content: "Name of Finished Product", styles: {  halign: "left" } }, 
+                { content: data.productName || " " , styles: {  halign: "center", valign: "middle" } }, 
+                { content: data.remarks || " " , styles: { halign: "center", valign: "middle" } }  
+              ], 
+              [ 
+                { content: "Supervisor Details", styles: {  halign: "left", valign: "middle" }, rowSpan: 3 },  
+                { content: `Name: ${import.meta.env.VITE_NAME}`,colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+              ], 
+              [ 
+                { content: `Email Address: ${import.meta.env.VITE_EMAIL}`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+              ], 
+              [ 
+                { content: `Contact Number: ${import.meta.env.VITE_PHONE}`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
+              ], 
+              [ 
+                { content: "Main points of the day", colSpan: 5, styles: { halign: "left", valign: "middle" } }
+              ], 
+              [ 
+                {  
+                  content: formattedMainPoints || " ",  
+                  colSpan: 5,  
+                  styles: { 
+                    fontSize: 14,
+                    fontStyle: "Times New Roman",
+                    minCellHeight: 105.792, 
+                    valign: "top", 
+                    halign: "left",
+                    cellPadding: { top: 5, right: 5, bottom: 5, left: 10 }
+                  }  
+                } 
+              ]
+            ] 
+          });
+          
+          let yPos = currentDoc.lastAutoTable.finalY + 5; 
+          currentDoc.setFont("times", "bold");
+          currentDoc.setFontSize(14); 
+          currentDoc.text("Signature of Industry Supervisor", 20.574,280);
 
-            doc.setFontSize(16);
-            doc.text("PROGRAM: B. TECH", 20.57, 57.15);
-            doc.setFont("times", 600);
-            doc.setFontSize(16);
-            doc.text("SEMESTER: 8", 151.638, 57.15);
-            doc.setFont("times", 600); 
-            const formattedMainPoints = formatMainPoints(data.mainPoints);
-            
-            autoTable(doc, {
-              startY: 67, // ← Start vertically at 67 mm
-              margin: { left: 22.5 }, // ← Horizontally center the table by setting left margin
-              tableWidth: 165.0,
-              theme: "grid",
-              styles: { 
-                fontSize: 10,
-                fontStyle:"Times New Roman", 
-                cellPadding: 1.7, 
-                valign: "middle", 
-                halign: "center",
-                lineColor: [0, 0, 0], 
-                lineWidth: 0.25 
-              }, 
-              columnStyles: { 
-                0: {  cellWidth: 33.02 },  
-                1: { cellWidth: 33.02 }, 
-                2: {  cellWidth: 33.02 }, 
-                3: { cellWidth: 33.02 }, 
-                4: { cellWidth: 33.02 }, 
-              }, 
-              body: [ 
-                [ 
-                  { content: "DAY-", styles: {  halign: "center", valign: "middle" } }, 
-                  { content: data.day || "N/A" , styles: { halign: "center", valign: "middle" } }, 
-                  { content: "DATE", styles: {  halign: "left", valign: "middle" } }, 
-                  { content: data.date || "N/A", styles: { halign: "center", valign: "middle" } }, 
-                  { content: "", styles: { halign: "center", valign: "middle" } } 
-                ], 
-                [ 
-                  { content: "Time of Arrival", styles: {  halign: "center", valign: "middle" } }, 
-                  { content: data.arrivalTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
-                  { content: "Time of Departure", styles: { halign: "left" } }, 
-                  { content: data.departureTime || "N/A" , styles: { halign: "center", valign: "middle" } }, 
-                  { content: "Remarks",styles: {  halign: "left", valign: "middle" } } 
-                ],
-                [ 
-                  { content: "Dept./Division", styles: {  halign: "center", valign: "middle" } }, 
-                  { content: data.department || " " , styles: { halign: "center", valign: "middle" } }, 
-                  { content: "Name of Finished Product", styles: {  halign: "left" } }, 
-                  { content: data.productName || " " , styles: {  halign: "center", valign: "middle" } }, 
-                  { content: data.remarks || " " , styles: { halign: "center", valign: "middle" } }  
-                ], 
-                [ 
-                  { content: "Supervisor Details", styles: {  halign: "left", valign: "middle" }, rowSpan: 3 },  
-                  { content: `Name: ${import.meta.env.VITE_NAME}`,colSpan: 4, styles: { halign: "left", valign: "middle" } } 
-                ], 
-                [ 
-                  { content: `Email Address: ${import.meta.env.VITE_EMAIL}`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
-                ], 
-                [ 
-                  { content: `Contact Number: ${import.meta.env.VITE_PHONE}`, colSpan: 4, styles: { halign: "left", valign: "middle" } } 
-                ], 
-                [ 
-                  { content: "Main points of the day", colSpan: 5, styles: { halign: "left", valign: "middle" } }
-                ], 
-                [ 
-                  {  
-                    content: formattedMainPoints || " ",  
-                    colSpan: 5,  
-                    styles: { 
-                      fontSize: 14,
-                      fontStyle: "Times New Roman",
-                      minCellHeight: 105.792, 
-                      valign: "top", 
-                      halign: "left",
-                      cellPadding: { top: 5, right: 5, bottom: 5, left: 10 }
-                    }  
-                  } 
-                ]
-              ] 
-            });
-            let yPos = doc.lastAutoTable.finalY + 5; 
-            doc.setFont("times", "bold");
-            doc.setFontSize(14); 
-            doc.text("Signature of Industry Supervisor", 20.574,280); 
+          
+          // If this isn't the last report, add a new page
+          currentDoc.addImage(signature, "PNG", 21, 242, 50, 20);
 
-            const pdfBlob = doc.output('blob');
-            resolve({ blob: pdfBlob, fileName: `${data.day + " * " + data.date || `report_${currentIndex}`}.pdf` });
-          } catch (error) {
-            console.error("Error generating PDF:", error);
-            setErrors(prev => ({...prev, processing: "Error generating PDF"}));
-            resolve(null);
-          }
-        };
-
-        logo.onerror = () => {
-          console.warn("Logo failed to load");
-          setErrors(prev => ({...prev, processing: "Logo failed to load"}));
-          resolve(null);
-        };
-      } catch (error) {
-        console.error("Error in PDF generation:", error);
-        setErrors(prev => ({...prev, processing: "PDF generation failed"}));
-        resolve(null);
-      }
-    });
-  };
-
-  const processAllReports = async () => {
-    if (csvData.length === 0) {
-      setErrors(prev => ({...prev, processing: "No CSV data loaded"}));
-      return;
-    }
-    
-    setIsProcessing(true);
-    setProgress(0);
-    const newZip = new JSZip();
-    let successCount = 0;
-    
-    try {
-      for (let i = 0; i < csvData.length; i++) {
-        const entry = csvData[i];
-        
-        const currentData = {
-          day: `${i + 1}`,
-          date: entry.Date || entry.date || "",
-          arrivalTime: entry["Time of Arrival"] || "",
-          departureTime: entry["Time of Departure"] || "",
-          remarks: entry.remarks || "",
-          department: entry["Deptt./Division"] || entry.Department || "",
-          productName: entry["Finished Product"] || entry.productName || "",
-          mainPoints: entry.Description || entry.mainPoints || "",
-          topic: entry.Topic || entry.topic || ""
-        };
-
-        setFormData(currentData);
-        setCurrentIndex(i);
-        setProgress(Math.round(((i + 1) / csvData.length) * 100));
-        
-        const result = await generatePDF(currentData);
-        if (result) {
-          newZip.file(result.fileName, result.blob);
-          successCount++;
+        if (!isLast) {
+          currentDoc.addPage();
         }
-        
-        setZip(newZip);
-        await new Promise(resolve => setTimeout(resolve, 300));
+
+        resolve(currentDoc);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        setErrors(prev => ({...prev, processing: "Error generating PDF"}));
+        resolve(currentDoc);
       }
+    }).catch((error) => {
+      console.error("Error loading images:", error);
+      resolve(currentDoc);
+    });
+  });
+};
+
+const processAllReports = async () => {
+  if (csvData.length === 0) {
+    setErrors(prev => ({...prev, processing: "No CSV data loaded"}));
+    return;
+  }
+  
+  setIsProcessing(true);
+  setProgress(0);
+  
+  try {
+    let masterPdf = null;
+    
+    for (let i = 0; i < csvData.length; i++) {
+      const entry = csvData[i];
       
-      if (successCount === 0) {
-        setErrors(prev => ({...prev, processing: "Failed to generate all PDFs"}));
-      } else if (successCount < csvData.length) {
-        setErrors(prev => ({...prev, processing: `Generated ${successCount}/${csvData.length} PDFs successfully`}));
-      } else {
-        setErrors(prev => ({...prev, processing: ""}));
-      }
-    } catch (error) {
-      console.error("Error processing reports:", error);
-      setErrors(prev => ({...prev, processing: "An error occurred while processing reports"}));
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+      const currentData = {
+        day: `${i + 1}`,
+        date: entry.Date || entry.date || "",
+        arrivalTime: entry["Time of Arrival"] || "",
+        departureTime: entry["Time of Departure"] || "",
+        remarks: entry.remarks || "",
+        department: entry["Deptt./Division"] || entry.Department || "",
+        productName: entry["Finished Product"] || entry.productName || "",
+        mainPoints: entry.Description || entry.mainPoints || "",
+        topic: entry.Topic || entry.topic || ""
+      };
 
-  const downloadAll = async () => {
-    if (Object.keys(zip.files).length === 0) {
-      setErrors(prev => ({...prev, processing: "No PDFs generated yet"}));
-      return;
+      setFormData(currentData);
+      setCurrentIndex(i);
+      setProgress(Math.round(((i + 1) / csvData.length) * 100));
+      
+      // Generate PDF page (pass masterPdf and whether this is the last page)
+      const isLastPage = i === csvData.length - 1;
+      masterPdf = await generatePDF(currentData, masterPdf, isLastPage);
+      
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
-
-    try {
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, "daily_reports.zip");
+    
+    if (masterPdf) {
+      // Save the combined PDF
+      const pdfBlob = masterPdf.output('blob');
+      saveAs(pdfBlob, "combined_daily_reports.pdf");
       setErrors(prev => ({...prev, processing: ""}));
-    } catch (error) {
-      console.error("Error while generating zip:", error);
-      setErrors(prev => ({...prev, processing: "Failed to generate ZIP file"}));
+    } else {
+      setErrors(prev => ({...prev, processing: "Failed to generate PDF"}));
     }
-  };
+  } catch (error) {
+    console.error("Error processing reports:", error);
+    setErrors(prev => ({...prev, processing: "An error occurred while processing reports"}));
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
+// Remove the downloadAll function since we're now generating a single PDF
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4 flex items-center justify-center">
@@ -477,17 +475,19 @@ const AutoGenerate = () => {
             {isProcessing ? `Processing... (${progress}%)` : "Generate PDFs"}
           </button>
   
-          <button
-            onClick={downloadAll}
-            disabled={isProcessing || Object.keys(zip.files).length === 0}
-            className={`py-3 px-6 rounded-lg font-semibold text-white transition ${
-              isProcessing || Object.keys(zip.files).length === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            Download All PDFs (ZIP)
-          </button>
+          <div className="flex flex-wrap gap-4 mt-4">
+              <button
+                onClick={processAllReports}
+                disabled={isProcessing || !hasValidData}
+                className={`py-3 px-6 rounded-lg font-semibold text-white transition duration-200 ${
+                  isProcessing || !hasValidData
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isProcessing ? `Processing... (${progress}%)` : "Generate Combined PDF"}
+              </button>
+            </div>
         </div>
   
         <div className="mt-4">
